@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br" ng-app="listaTelefonica">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../angular-1.7.9/angular.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <style>
+        .jumbotron {
+            width: 400px;
+            text-align:left;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 10px;
+            padding-top: 30px;
+            padding-left: 15px;
+            background-color:green;
+        }
+
+        .table {
+            margin-top: 20px;
+        }
+
+        .btn {
+            margin-top: 15px;
+            text-align:left;
+        }
+
+        .selecionado {
+            background-color:lightpink;
+        }
+
+        h3 {
+            font-family: 'helvetica';
+            font-weight: bold;
+            font-size: 40px;
+            color: whitesmoke;
+        }
+
+        h6, th, td {
+            color: white;
+        }
+
+        .alert {
+            padding: 2px;
+        }
+
+    </style>
+    <script>
+        angular.module("listaTelefonica",[])
+        angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope){
+            $scope.app = "Lista Telefônica"
+            $scope.contatos = [{nome:'Pedro', telefone: '988977634'},
+                                {nome:'Paulo', telefone: '998120785'},
+                                {nome:'Joana', telefone: '997315560'}]
+            $scope.operadoras = [{nome: 'Oi', codigo:14, categoria: 'Celular'}, {nome: 'Vivo', codigo:15,categoria: 'Celular'},
+                                {nome: 'Tim',codigo:41, categoria: 'Celular'},{nome: 'Claro',codigo:21, categoria: 'Celular'},
+                                {nome: 'GVT',codigo:25, categoria: 'Fixo'}, {nome: 'Embratel',codigo:21, categoria: 'Fixo'}]
+            $scope.selecionado = 'selecionado'
+
+            $scope.adicionarContato = function(contato){
+                $scope.contatos.push(angular.copy(contato))
+                delete $scope.contato
+                $scope.contatoForm.$setPristine()
+            }
+
+            $scope.deletarContato = function(contatos){
+                $scope.contatos = contatos.filter(function (contato){
+                    if (!contato.selecionado) return contato
+                })
+            }
+
+            $scope.isContatoSelecionado = function(contatos){
+                return contatos.some(function (contato){
+                    return contato.selecionado
+                })
+            }
+        })
+
+    </script>
+    <title>Lista Telefônica</title>
+</head>
+<body ng-controller="listaTelefonicaCtrl">
+    <div class="jumbotron">
+        <h3>{{app}}</h3>
+        <table ng-show="contatos.length > 0" class="table">
+            <tr>
+                <th></th>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Operadora</th>
+            </tr>
+            <tr ng-class="{selecionado: contato.selecionado}" ng-repeat="contato in contatos">
+                <td><input ng-model="contato.selecionado" type="checkbox"/></td>
+                <td>{{contato.nome}}</td>
+                <td>{{contato.telefone}}</td>
+                <td>{{contato.operadora.nome}}</td>
+            </tr>
+        </table>
+        <button ng-if="isContatoSelecionado(contatos)" class="btn btn-danger btn-block" ng-click="deletarContato(contatos)">Deletar Contato</button>
+        <br>
+        <form name="contatoForm">
+            <h6>Nome:<input ng-required="true" maxlength="14" name="nome" class="form-control" type="text" ng-model="contato.nome"/></h6>
+            <div ng-show="contatoForm.nome.$invalid && contatoForm.nome.$dirty" class="alert alert-danger">Por favor, insira seu nome.</div>
+
+            <h6>Telefone:<input ng-required="true" ng-pattern="/^\d{5,7}-\d{4}$/" ng-minlength="9" maxlength="14" name="telefone" class="form-control" type="text" ng-model="contato.telefone"/></h6>
+            <div ng-show="contatoForm.telefone.$error.required && contatoForm.telefone.$dirty" class="alert alert-danger">Por favor, insira seu telefone.</div>
+            <div ng-show="contatoForm.telefone.$error.minlength" class="alert alert-danger">Telefone deve ter no minimo 9 caracteres.</div>
+            <div ng-show="contatoForm.telefone.$error.pattern" class="alert alert-danger">Telefone deve ter o formato XXXXX-XXXX ou XXXXXXX-XXXX</div>
+
+            <h6>Operadora:<br><select class="form-control" ng-model="contato.operadora" ng-options="operadora.nome group by operadora.categoria for operadora in operadoras">
+                <option value="">Selecione</option>
+            </select></h6>
+            
+            <button class="btn btn-primary btn-block" ng-click="adicionarContato(contato)" ng-disabled="contatoForm.$invalid">{{'Adicionar ' + contato.nome + ' aos contatos'}}</button>
+        </form>
+    </div>
+
+    <footer ng-show="contatoForm.$invalid" class="page-footer text-center">
+        Criado por Lucas Thomaz
+    </footer>
+    
+</body>
+</html>
