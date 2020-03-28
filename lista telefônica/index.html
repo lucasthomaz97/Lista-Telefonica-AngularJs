@@ -10,14 +10,32 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <style>
         .jumbotron {
-            width: 400px;
+            width: 600px;
             text-align:left;
             margin-left: auto;
             margin-right: auto;
             margin-top: 10px;
             padding-top: 30px;
             padding-left: 15px;
-            background-color:green;
+            padding-bottom: 20px;
+            background-color: #FFA312;
+        }
+
+        a {
+            color: white;
+        }
+
+        a:hover {
+            color: yellow;
+            text-decoration: none;
+        }
+
+        .card{
+            margin-top: 10px;
+            padding: 10px;
+            height: 250px;
+            overflow-y: scroll;
+            background-color: #FFC15E;
         }
 
         .table {
@@ -37,7 +55,7 @@
             font-family: 'helvetica';
             font-weight: bold;
             font-size: 40px;
-            color: whitesmoke;
+            color: white;
         }
 
         h6, th, td {
@@ -51,17 +69,18 @@
     </style>
     <script>
         angular.module("listaTelefonica",[])
-        angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope){
+        angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope, $http){
             $scope.app = "Lista Telefônica"
-            $scope.contatos = [{nome:'Pedro', telefone: '988977634'},
-                                {nome:'Paulo', telefone: '998120785'},
-                                {nome:'Joana', telefone: '997315560'}]
+            $scope.contatos = [{nome:'Pedro',data: new Date(), telefone: '988977634', operadora:{nome: "Oi", codigo:14, categoria: "Celular"}},
+                                {nome:'Paulo', data: new Date(), telefone: '998120785',operadora:{nome: 'Claro',codigo:21, categoria: 'Celular'}},
+                                {nome:'Joana', data: new Date(), telefone: '997315560',operadora:{nome: 'Embratel',codigo:21, categoria: 'Fixo'}}]
             $scope.operadoras = [{nome: 'Oi', codigo:14, categoria: 'Celular'}, {nome: 'Vivo', codigo:15,categoria: 'Celular'},
                                 {nome: 'Tim',codigo:41, categoria: 'Celular'},{nome: 'Claro',codigo:21, categoria: 'Celular'},
                                 {nome: 'GVT',codigo:25, categoria: 'Fixo'}, {nome: 'Embratel',codigo:21, categoria: 'Fixo'}]
             $scope.selecionado = 'selecionado'
-
+            
             $scope.adicionarContato = function(contato){
+                contato.data = new Date()
                 $scope.contatos.push(angular.copy(contato))
                 delete $scope.contato
                 $scope.contatoForm.$setPristine()
@@ -78,28 +97,39 @@
                     return contato.selecionado
                 })
             }
+
+            $scope.ordenarPor = function(campo) {
+                $scope.criterioOrdenacao = campo
+                $scope.direcaoOrdenacao = !$scope.direcaoOrdenacao
+            }
         })
 
     </script>
     <title>Lista Telefônica</title>
 </head>
 <body ng-controller="listaTelefonicaCtrl">
-    <div class="jumbotron">
+    <div class="jumbotron bg">
         <h3>{{app}}</h3>
+        <input type="text" class="form-control" ng-model="criterioBusca" placeholder="Procure algum contato específico aqui!">
+        <div class="card scrollbar-info bg">
         <table ng-show="contatos.length > 0" class="table">
             <tr>
                 <th></th>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>Operadora</th>
+                <th><a href="" ng-click="ordenarPor('nome')">Nome</a></th>
+                <th><a href="" ng-click="ordenarPor('data')">Data</a></th>
+                <th><a href="" ng-click="ordenarPor('telefone')">Telefone</a></th>
+                <th><a href="" ng-click="ordenarPor('operadora')">Operadora</a></th>
             </tr>
-            <tr ng-class="{selecionado: contato.selecionado}" ng-repeat="contato in contatos">
+            <tr ng-class="{selecionado: contato.selecionado}"
+            ng-repeat="contato in contatos | filter: criterioBusca | orderBy:criterioOrdenacao:direcaoOrdenacao">
                 <td><input ng-model="contato.selecionado" type="checkbox"/></td>
                 <td>{{contato.nome}}</td>
+                <td>{{contato.data | date:'dd/MM/yyyy HH:mm'}}</a></td>
                 <td>{{contato.telefone}}</td>
                 <td>{{contato.operadora.nome}}</td>
             </tr>
         </table>
+        </div>
         <button ng-if="isContatoSelecionado(contatos)" class="btn btn-danger btn-block" ng-click="deletarContato(contatos)">Deletar Contato</button>
         <br>
         <form name="contatoForm">
